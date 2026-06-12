@@ -1,10 +1,10 @@
-# 🇮🇷 IRAN CV Analyzer
+#  IRAN CV Analyzer
 
 Upload your resume → Get AI-powered career insights
 
 ---
 
-## 🧠 Overview
+##  Overview
 
 IRAN CV Analyzer is a smart AI-powered Shiny application that analyzes resumes locally using **Ollama + Llama 3.2** and provides:
 
@@ -14,7 +14,7 @@ IRAN CV Analyzer is a smart AI-powered Shiny application that analyzes resumes l
 
 ---
 
-## 🛠 Built With
+##  Built With
 
 - R  
 - Shiny  
@@ -23,24 +23,24 @@ IRAN CV Analyzer is a smart AI-powered Shiny application that analyzes resumes l
 
 ---
 
-## ✨ Features
+##  Features
 
-- 📄 Resume (PDF) upload  
-- 🧠 AI-powered CV analysis  
-- 🎯 Job recommendation system  
-- 📉 Skill gap detection  
-- 🗺 Career roadmap generation  
-- 🔒 Fully local AI (no cloud API needed)
+- Resume (PDF) upload  
+-  AI-powered CV analysis  
+- Job recommendation system  
+-  Skill gap detection  
+- Career roadmap generation  
+-  Fully local AI (no cloud API needed)
 
 ---
 
-## 📊 Preview
+##  Preview
 
 ![Dashboard](dashboard.png)
 
 ---
 
-## 🔌 Local AI Setup (Ollama)
+##  Local AI Setup (Ollama)
 
 This project runs fully locally using **Ollama**.
 
