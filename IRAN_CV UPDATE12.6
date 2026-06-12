@@ -1,0 +1,205 @@
+library(shiny)
+library(bslib)
+library(pdftools)
+library(stringr)
+
+# =========================
+# THEME
+# =========================
+theme <- bs_theme(
+  version = 5,
+  bg = "#fff0f6",
+  fg = "#111827",
+  primary = "#ff4da6",
+  base_font = font_google("Inter")
+)
+
+# =========================
+# UI
+# =========================
+ui <- page_sidebar(
+  theme = theme,
+  title = "IRAN CV Analyzer",
+  sidebar = sidebar(
+    fileInput("file", "Upload CV (PDF)", accept = ".pdf")
+  ),
+  div(
+    style = "background:white;padding:20px;border-radius:18px;border:2px solid #ffb3d9;margin-bottom:16px;",
+    h3("CV Analysis Dashboard"),
+    p("Upload your resume → AI generates career roadmap")
+  ),
+  layout_column_wrap(
+    width = 1/3,
+    card(
+      card_header(" Suggested Job"),
+      h3(textOutput("best_job"), style = "color:#ff4da6;")
+    ),
+    card(
+      card_header(" Missing Skills"),
+      verbatimTextOutput("missing")
+    ),
+    card(
+      card_header(" Skill Roadmap"),
+      htmlOutput("ai_output")
+    )
+  )
+)
+observe({
+  try(
+    system2(
+      "ollama",
+      c("run","llama3.2:3b","hi"),
+      stdout = FALSE,
+      stderr = FALSE
+    )
+  )
+})
+# =========================
+# SERVER
+# =========================
+server <- function(input, output) {
+
+  observe({
+    try(
+      system2(
+        "ollama",
+        c("run","llama3.2:3b","hi"),
+        stdout = FALSE,
+        stderr = FALSE
+      )
+    )
+  })
+
+  cv_text <- reactive({
+    req(input$file)
+    tryCatch({
+      text <- pdf_text(input$file$datapath)
+      text <- paste(text, collapse = " ")
+
+      text <- str_remove_all(text, regex(
+        "(?i)(linkedin|github|contact|email|phone|tehran|iran)",
+        ignore_case = TRUE
+      ))
+
+      text <- str_squish(tolower(text))
+
+      text <- substr(text, 1, 5000)
+
+      if (nchar(text) < 100) {
+        showNotification("PDF not readable", type = "error")
+        return(NULL)
+      }
+
+      text
+    }, error = function(e) {
+      showNotification("Error reading PDF", type = "error")
+      NULL
+    })
+  })
+
+  clean_output <- function(text) {
+    if (is.null(text)) return("")
+    text <- gsub("\u001B\\[[0-9;?]*[a-zA-Z]", "", text, perl = TRUE)
+    text <- gsub("[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]+", "", text)
+    text <- gsub("(\\b\\w+\\b)\\s+\\1", "\\1", text)
+    str_trim(text)
+  }
+
+  call_ai <- function(prompt) {
+    tryCatch({
+      res <- system2(
+        "ollama",
+        args = c("run", "llama3.2:3b", prompt),
+        stdout = TRUE,
+        stderr = FALSE,
+        timeout = 300
+      )
+      clean_output(paste(res, collapse = "\n"))
+    }, error = function(e) {
+      paste("Error:", e$message)
+    })
+  }
+
+  best_job <- reactive({
+    req(cv_text())
+    prompt <- paste0(
+      "Return ONLY one job title based strictly on CV.\n",
+      "Do NOT invent experience.\n\nCV:\n",
+      cv_text()
+    )
+    clean_output(call_ai(prompt))
+  })
+
+  missing_skills <- reactive({
+    req(cv_text())
+    prompt <- paste0(
+      "You are a strict CV parser.\n",
+      "RULES:\n",
+      "- Use ONLY skills explicitly in CV\n",
+      "- Do NOT infer cybersecurity/cloud/devops unless written\n",
+      "- Max 4 items\n\n",
+      "Format:\n- Skill: reason\n\nCV:\n",
+      cv_text()
+    )
+    clean_output(call_ai(prompt))
+  })
+
+ ai_output <- reactive({
+  req(cv_text())
+  
+  prompt <- paste0(
+    "You are an expert CV analyst.\n",
+    "Determine the candidate level based ONLY on CV evidence.\n",
+    "Do NOT assume any fixed level.\n\n",
+    
+    "RULES:\n",
+    "- Infer level: Junior / Mid / Senior based only on experience\n",
+    "- Do NOT exaggerate skills or experience\n",
+    "- If unclear, choose the lower level\n",
+    "- No hallucination\n\n",
+    
+    "Return format EXACTLY:\n",
+    "TARGET ROLE:\n",
+    "CURRENT LEVEL:\n\n",
+    
+    "SKILL ROADMAP:\n",
+    "SQL:\nPython/R:\nExcel:\nStatistics:\nPower BI:\n\n",
+    
+    "TOP 3 PRIORITIES:\n1.\n2.\n3.\n\n",
+    
+    "ADVICE:\n\nCV:\n",
+    
+    cv_text()
+  )
+  
+  clean_output(call_ai(prompt))
+})
+
+  output$best_job <- renderText({ req(best_job()); best_job() })
+  output$missing <- renderText({ req(missing_skills()); missing_skills() })
+
+  output$ai_output <- renderUI({
+    req(ai_output())
+    txt <- ai_output()
+
+    lines <- str_split(txt, "\n")[[1]]
+    html <- "<div style='line-height:1.7;'>"
+
+    for (line in lines) {
+      line <- str_trim(line)
+      if (line == "") next
+
+      if (str_detect(line, "TARGET ROLE")) {
+        html <- paste0(html, "<h4 style='color:#ff4da6;'>", line, "</h4>")
+      } else if (str_detect(line, "CURRENT LEVEL")) {
+        html <- paste0(html, "<b>", line, "</b>")
+      } else {
+        html <- paste0(html, "<p>", line, "</p>")
+      }
+    }
+
+    HTML(paste0(html, "</div>"))
+  })
+}
+
+shinyApp(ui, server)
