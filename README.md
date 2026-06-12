@@ -82,12 +82,18 @@ If everything is correct, you will see:
 ### 4.▶️ Run the App (R)
 
 Install required packages:
-
-install.packages(c("shiny", "httr", "jsonlite", "stringr"))
-
+```bash
+install.packages("shiny")
+install.packages("bslib")
+install.packages("pdftools")
+install.packages("stringr")
+```
 Run the application:
 
 source("IRAN_CV.R")
+
+
+
 ⚠️ Important Flow
 
 Make sure you follow this order:
