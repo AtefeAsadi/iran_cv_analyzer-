@@ -12,3 +12,6 @@ Built with:
 - Missing skills detection
 - Career roadmap
 - Local AI support
+## Preview
+
+![Dashboard](dashboard.png)
