@@ -59,14 +59,17 @@ https://ollama.com
 Open CMD (Run as Administrator) and run:
 
 ```bash
-ollama --version```
+ollama --version
+```
 If Ollama is installed correctly, you will see the version number.
 Then pull the model:
 ```bash
-ollama pull llama3.2```
+ollama pull llama3.2
+```
 Wait for the installation (about 1–5 minutes).then write:
 ```bash
-ollama serve```
+ollama serve
+```
 Check if everything is working:
 Open your browser and go to:
 
