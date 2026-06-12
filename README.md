@@ -79,7 +79,7 @@ If everything is correct, you will see:
 
 "Ollama is running"
 
-### 4.▶️ Run the App (R)
+### 4. Run the App (R)
 
 Install required packages:
 ```bash
@@ -102,9 +102,5 @@ Start Ollama (ollama serve)
 Ensure model is downloaded (llama3.2)
 Run the R Shiny app
 Upload your CV in the interface
-🚀 Result
-After upload, the system generates:
-Suggested job roles
-Missing skill analysis
-Career development roadmap
+
 👉 For more details, watch the video on LinkedIn.
