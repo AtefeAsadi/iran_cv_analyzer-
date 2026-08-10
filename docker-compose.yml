@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3838:3838"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - .:/app
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    command: ["serve"]
+
+volumes:
+  ollama_data:
